@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import styles from '@/styles/Calendar.module.css'
 
 export default function NotesPanel({ 
@@ -6,46 +7,111 @@ export default function NotesPanel({
   rangeNote, 
   onRangeNoteChange, 
   hasRange,
-  rangeText 
+  rangeText,
+  savedNotesIndicator,
+  onClearRange
 }) {
+  const [isExpanded, setIsExpanded] = useState(true)
+  
   return (
     <div className={styles.notesSection}>
-      <div style={{ marginBottom: '1.5rem' }}>
-        <h3 style={{ fontFamily: 'Playfair Display', fontSize: '1.5rem', marginBottom: '0.5rem', color: '#5d432c' }}>
-          📔 Journal & Notes
-        </h3>
+      <div className={styles.notesHeader}>
+        <span className={styles.notesIcon}>📔</span>
+        <h3>Journal & Notes</h3>
+        <button 
+          className={styles.expandBtn}
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          {isExpanded ? '−' : '+'}
+        </button>
       </div>
       
-      <div style={{ marginBottom: '1.5rem' }}>
-        <label style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#b48a54' }}>
-          📌 Monthly Memo
-        </label>
-        <textarea 
-          className={styles.notesTextarea}
-          style={{ width: '100%', minHeight: '100px', background: '#fffef7', border: '1px solid #eddbba', borderRadius: '24px', padding: '1rem', resize: 'vertical', fontFamily: 'Inter' }}
-          value={generalNote}
-          onChange={(e) => onGeneralNoteChange(e.target.value)}
-          placeholder="General notes for the month... events, reminders, or personal thoughts."
-        />
-      </div>
-      
-      <div>
-        <label style={{ fontSize: '0.75rem', fontWeight: 600, textTransform: 'uppercase', color: '#b48a54' }}>
-          ✍️ Range-specific notes {hasRange ? `(${rangeText})` : ''}
-        </label>
-        <textarea 
-          className={styles.notesTextarea}
-          style={{ width: '100%', minHeight: '140px', background: '#fffef7', border: '1px solid #eddbba', borderRadius: '24px', padding: '1rem', resize: 'vertical', fontFamily: 'Inter' }}
-          value={rangeNote}
-          onChange={(e) => onRangeNoteChange(e.target.value)}
-          placeholder={hasRange ? "Jot down notes attached to this date range." : "Select a start and end date on the calendar to attach notes to this range."}
-          disabled={!hasRange}
-        />
-      </div>
-      
-      <div style={{ marginTop: '1rem', borderTop: '1px dashed #eedeba', paddingTop: '0.8rem', fontSize: '0.7rem', color: '#bb9f73', fontStyle: 'italic', textAlign: 'center' }}>
-        “The calendar pages turn, but memories stay.”
-      </div>
+      {isExpanded && (
+        <>
+          {/* Monthly Memo Section */}
+          <div className={styles.noteGroup}>
+            <div className={styles.noteLabel}>
+              <span>📌 Monthly Memo</span>
+              <span className={styles.noteHint}>persists across months</span>
+            </div>
+            <textarea 
+              className={styles.notesTextarea}
+              style={{ minHeight: '100px' }}
+              value={generalNote}
+              onChange={(e) => onGeneralNoteChange(e.target.value)}
+              placeholder="General notes for the month... events, reminders, or personal thoughts."
+            />
+          </div>
+          
+          {/* Range-Specific Notes Section - IMPROVED */}
+          <div className={styles.noteGroup}>
+            <div className={styles.noteLabel}>
+              <span>✍️ Range-specific Notes</span>
+              {savedNotesIndicator && (
+                <span className={styles.savedBadge}>💾 Saved</span>
+              )}
+            </div>
+            
+            {/* Range info card */}
+            <div className={styles.rangeInfoCard}>
+              <div className={styles.rangeBadge}>
+                {hasRange ? (
+                  <>
+                    <span className={styles.rangeIcon}>📅</span>
+                    <span className={styles.rangeText}>{rangeText}</span>
+                    <button className={styles.clearRangeBtn} onClick={onClearRange}>
+                      ✕
+                    </button>
+                  </>
+                ) : (
+                  <span className={styles.noRangeMsg}>
+                    👆 Click on calendar to select a date range
+                  </span>
+                )}
+              </div>
+            </div>
+            
+            {/* Notes textarea - enabled only when range is selected */}
+            <textarea 
+              className={`${styles.notesTextarea} ${!hasRange ? styles.disabledTextarea : ''}`}
+              style={{ minHeight: '140px' }}
+              value={rangeNote}
+              onChange={(e) => onRangeNoteChange(e.target.value)}
+              placeholder={hasRange 
+                ? "Write notes for this specific date range. They will be saved automatically and reappear when you select the same range again!" 
+                : "Select a start and end date on the calendar first..."
+              }
+              disabled={!hasRange}
+            />
+            
+            {/* Helpful tip */}
+            {hasRange && (
+              <div className={styles.rangeTip}>
+                💡 Tip: Your notes are saved for this exact date range. 
+                If you select the same range again later, your notes will reappear!
+              </div>
+            )}
+          </div>
+          
+          {/* Recent ranges quick access - NEW FEATURE */}
+          <div className={styles.recentRanges}>
+            <div className={styles.recentHeader}>
+              <span>🕐 Recent Ranges</span>
+            </div>
+            <div className={styles.recentList}>
+              {/* This will be populated from props - shows last 3 ranges with notes */}
+              {savedNotesIndicator === 'list' && (
+                <div className={styles.recentEmpty}>Select a range to see saved notes</div>
+              )}
+            </div>
+          </div>
+          
+          {/* Vintage footer */}
+          <div className={styles.notesFooter}>
+            “The calendar pages turn, but memories stay.”
+          </div>
+        </>
+      )}
     </div>
   )
 }
