@@ -1,106 +1,154 @@
-import { useState, useEffect, useCallback, useMemo } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import styles from '@/styles/Calendar.module.css'
 import HeroImage from './HeroImage'
 import MonthNavigator from './MonthNavigator'
 import CalendarGrid from './CalendarGrid'
 import NotesPanel from './NotesPanel'
-import { useCalendarRange } from '@/hooks/useCalendarRange'
+import { isSameDay } from '@/utils/dateHelpers'
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date())
+  const [startDate, setStartDate] = useState(null)
+  const [endDate, setEndDate] = useState(null)
+  const [generalNote, setGeneralNote] = useState('')
+  const [rangeNotesMap, setRangeNotesMap] = useState({})
+  const [isEditing, setIsEditing] = useState(false)
+  
   const currentYear = currentDate.getFullYear()
   const currentMonth = currentDate.getMonth()
   
-  const [generalNote, setGeneralNote] = useState('')
-  const [recentRanges, setRecentRanges] = useState([])
-  const [isEditing, setIsEditing] = useState(false)
-  
-  const {
-    startDate,
-    endDate,
-    currentRangeNote,
-    setCurrentRangeNote,
-    handleDateClick,
-    clearRange,
-    isInRange,
-    isStart,
-    isEnd,
-    getRangeText,
-    hasSavedNotesForRange,
-    rangeNotesMap,
-    saveRangeNote,
-    deleteRangeNote
-  } = useCalendarRange()
-  
-  // Load general note from localStorage
+  // Load saved data
   useEffect(() => {
-    const saved = localStorage.getItem('wallCalendar_generalNote')
-    if (saved !== null) setGeneralNote(saved)
+    const savedGeneral = localStorage.getItem('wallCalendar_generalNote')
+    if (savedGeneral) setGeneralNote(savedGeneral)
     
-    // Load recent ranges with notes
-    loadRecentRanges()
-  }, [])
-  
-  const loadRecentRanges = () => {
-    const allNotes = localStorage.getItem('wallCalendar_rangeNotesMap')
-    if (allNotes) {
+    const savedNotes = localStorage.getItem('wallCalendar_rangeNotesMap')
+    if (savedNotes) {
       try {
-        const notesMap = JSON.parse(allNotes)
-        const ranges = Object.keys(notesMap).map(key => {
-          const [start, end] = key.split('_to_').map(Number)
-          return {
-            key,
-            start: new Date(start),
-            end: new Date(end),
-            note: notesMap[key],
-            display: `${new Date(start).toLocaleDateString()} – ${new Date(end).toLocaleDateString()}`
-          }
-        }).sort((a, b) => b.start.getTime() - a.start.getTime()).slice(0, 5)
-        
-        setRecentRanges(ranges)
-        
-        // Update DOM
-        setTimeout(() => {
-          const listEl = document.getElementById('recent-list')
-          if (listEl && ranges.length > 0) {
-            listEl.innerHTML = ranges.map(range => `
-              <div class="${styles.recentItem}" data-start="${range.start.getTime()}" data-end="${range.end.getTime()}">
-                <div class="${styles.recentItemDate}">📅 ${range.display}</div>
-                <div class="${styles.recentItemPreview}">${range.note.substring(0, 50)}${range.note.length > 50 ? '...' : ''}</div>
-              </div>
-            `).join('')
-            
-            // Add click handlers
-            document.querySelectorAll('.recentItem').forEach(el => {
-              el.addEventListener('click', () => {
-                const startTime = parseInt(el.dataset.start)
-                const endTime = parseInt(el.dataset.end)
-                const newStart = new Date(startTime)
-                const newEnd = new Date(endTime)
-                // This would require a way to jump to that range - could be expanded
-                alert(`Range selected: ${newStart.toLocaleDateString()} – ${newEnd.toLocaleDateString()}\nNote: ${notesMap[`${startTime}_to_${endTime}`]}`)
-              })
-            })
-          } else if (listEl) {
-            listEl.innerHTML = '<div class="recentEmpty">No saved notes yet. Create your first range note!</div>'
-          }
-        }, 100)
+        setRangeNotesMap(JSON.parse(savedNotes))
       } catch(e) {}
     }
-  }
+  }, [])
   
   // Save general note
   useEffect(() => {
     localStorage.setItem('wallCalendar_generalNote', generalNote)
   }, [generalNote])
   
-  // Reload recent ranges when notes change
+  // Save range notes map
   useEffect(() => {
-    loadRecentRanges()
+    localStorage.setItem('wallCalendar_rangeNotesMap', JSON.stringify(rangeNotesMap))
   }, [rangeNotesMap])
   
+  // Get current range key
+  const getRangeKey = useCallback(() => {
+    if (startDate && endDate) {
+      return `${startDate.getTime()}_to_${endDate.getTime()}`
+    }
+    return null
+  }, [startDate, endDate])
+  
+  // Get current range note
+  const currentRangeNote = (() => {
+    const key = getRangeKey()
+    return key ? (rangeNotesMap[key] || '') : ''
+  })()
+  
+  // Handle date click for range selection - FIXED
+  const handleDateClick = useCallback((clickedDate) => {
+    // Case 1: No start date selected
+    if (!startDate) {
+      setStartDate(clickedDate)
+      setEndDate(null)
+      return
+    }
+    
+    // Case 2: Start date selected, no end date
+    if (startDate && !endDate) {
+      // If clicking the same date -> clear selection
+      if (isSameDay(clickedDate, startDate)) {
+        setStartDate(null)
+        setEndDate(null)
+        return
+      }
+      
+      // If clicked date is after start date -> set as end
+      if (clickedDate > startDate) {
+        setEndDate(clickedDate)
+      } 
+      // If clicked date is before start date -> new start
+      else {
+        setStartDate(clickedDate)
+        setEndDate(null)
+      }
+      return
+    }
+    
+    // Case 3: Both start and end selected -> start fresh with new date
+    if (startDate && endDate) {
+      setStartDate(clickedDate)
+      setEndDate(null)
+    }
+  }, [startDate, endDate])
+  
+  // Save range note
+  const handleSaveRangeNote = useCallback((note) => {
+    const key = getRangeKey()
+    if (key && note && note.trim()) {
+      setRangeNotesMap(prev => ({
+        ...prev,
+        [key]: note
+      }))
+      setIsEditing(false)
+    }
+  }, [getRangeKey])
+  
+  // Delete range note
+  const handleDeleteRangeNote = useCallback(() => {
+    const key = getRangeKey()
+    if (key) {
+      setRangeNotesMap(prev => {
+        const newMap = { ...prev }
+        delete newMap[key]
+        return newMap
+      })
+      setIsEditing(false)
+    }
+  }, [getRangeKey])
+  
+  // Clear range selection
+  const clearRange = useCallback(() => {
+    setStartDate(null)
+    setEndDate(null)
+    setIsEditing(false)
+  }, [])
+  
+  // Check if current range has saved note
+  const hasSavedNote = (() => {
+    const key = getRangeKey()
+    return key ? !!rangeNotesMap[key] : false
+  })()
+  
+  // Get range display text
+  const getRangeText = useCallback(() => {
+    if (startDate && endDate) {
+      const startStr = startDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+      const endStr = endDate.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
+      const dayCount = Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1
+      return `${startStr} – ${endStr} (${dayCount} days)`
+    }
+    if (startDate && !endDate) {
+      return `Selected start: ${startDate.toLocaleDateString()} → click end date`
+    }
+    return "Click a date to start selection"
+  }, [startDate, endDate])
+  
+  // Navigation
   const prevMonth = useCallback(() => {
     setCurrentDate(new Date(currentYear, currentMonth - 1, 1))
+    // Optionally clear selection when changing months
+    // setStartDate(null)
+    // setEndDate(null)
   }, [currentYear, currentMonth])
   
   const nextMonth = useCallback(() => {
@@ -109,27 +157,6 @@ export default function Calendar() {
   
   const hasRange = startDate && endDate
   
-  const hasSavedNote = useMemo(() => {
-    if (startDate && endDate) {
-      return hasSavedNotesForRange(startDate, endDate)
-    }
-    return false
-  }, [startDate, endDate, hasSavedNotesForRange])
-  
-  const handleSaveRangeNote = (note) => {
-    if (startDate && endDate) {
-      saveRangeNote(startDate, endDate, note)
-      setIsEditing(false)
-    }
-  }
-  
-  const handleDeleteRangeNote = () => {
-    if (startDate && endDate) {
-      deleteRangeNote(startDate, endDate)
-      setIsEditing(false)
-    }
-  }
-  
   return (
     <div className={styles.wallCalendar}>
       <div className={styles.calendarContainer}>
@@ -137,25 +164,25 @@ export default function Calendar() {
           
           <div className={styles.mainSection}>
             <HeroImage />
+            
             <MonthNavigator 
               currentYear={currentYear}
               currentMonth={currentMonth}
               onPrev={prevMonth}
               onNext={nextMonth}
             />
+            
             <CalendarGrid 
               year={currentYear}
               month={currentMonth}
               startDate={startDate}
               endDate={endDate}
-              isInRange={isInRange}
-              isStart={isStart}
-              isEnd={isEnd}
               onDateClick={handleDateClick}
             />
+            
             <div className={styles.selectionInfo}>
-              <span className={styles.rangeIcon}>📅</span>
-              {getRangeText()}
+              <span>📅</span>
+              <span>{getRangeText()}</span>
               {(startDate || endDate) && (
                 <button className={styles.clearRange} onClick={clearRange}>
                   Clear
@@ -163,7 +190,6 @@ export default function Calendar() {
               )}
             </div>
             
-            {/* Quick stats */}
             {hasRange && (
               <div className={styles.rangeStats}>
                 <div className={styles.statItem}>
@@ -171,9 +197,7 @@ export default function Calendar() {
                   <strong>{Math.round((endDate - startDate) / (1000 * 60 * 60 * 24)) + 1} days</strong>
                 </div>
                 {hasSavedNote && (
-                  <div className={styles.savedNoteIndicator}>
-                    💾 Saved note exists
-                  </div>
+                  <div className={styles.savedNoteIndicator}>💾 Saved note exists</div>
                 )}
               </div>
             )}
@@ -183,7 +207,6 @@ export default function Calendar() {
             generalNote={generalNote}
             onGeneralNoteChange={setGeneralNote}
             rangeNote={currentRangeNote}
-            onRangeNoteChange={setCurrentRangeNote}
             hasRange={hasRange}
             rangeText={getRangeText()}
             savedNotesIndicator={hasSavedNote}
@@ -196,7 +219,7 @@ export default function Calendar() {
           
         </div>
         <div className={styles.footer}>
-          🕊️ Wall Calendar · Select dates → Add Note → Save → Persists forever
+          🕊️ Wall Calendar · Click dates to select range · Add notes · Auto-saves
         </div>
       </div>
     </div>
