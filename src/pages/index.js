@@ -343,7 +343,7 @@ export default function Calendar() {
                     gap: '6px'
                   }}
                 >
-                  🖼️ Change Image
+                  🖼️ 
                 </button>
                 
                 {currentMonthImage && (
@@ -360,7 +360,7 @@ export default function Calendar() {
                       fontSize: '12px'
                     }}
                   >
-                    ✕ Reset
+                    ✕ 
                   </button>
                 )}
               </div>
@@ -403,7 +403,7 @@ export default function Calendar() {
                       marginBottom: '8px'
                     }}
                   >
-                    📁 Choose from PC
+                    Choose from PC
                   </button>
                   <button
                     onClick={() => setShowImageUpload(false)}
