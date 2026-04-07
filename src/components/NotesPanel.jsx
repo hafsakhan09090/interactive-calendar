@@ -9,9 +9,36 @@ export default function NotesPanel({
   hasRange,
   rangeText,
   savedNotesIndicator,
-  onClearRange
+  onClearRange,
+  onSaveRangeNote,
+  onDeleteRangeNote,
+  isEditing,
+  setIsEditing
 }) {
   const [isExpanded, setIsExpanded] = useState(true)
+  const [localNote, setLocalNote] = useState(rangeNote)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
+  
+  // Sync local note when range note changes from outside
+  useState(() => {
+    setLocalNote(rangeNote)
+  }, [rangeNote])
+  
+  const handleSave = () => {
+    onSaveRangeNote(localNote)
+    setIsEditing(false)
+  }
+  
+  const handleCancel = () => {
+    setLocalNote(rangeNote)
+    setIsEditing(false)
+  }
+  
+  const handleDelete = () => {
+    onDeleteRangeNote()
+    setShowDeleteConfirm(false)
+    setIsEditing(false)
+  }
   
   return (
     <div className={styles.notesSection}>
@@ -32,7 +59,7 @@ export default function NotesPanel({
           <div className={styles.noteGroup}>
             <div className={styles.noteLabel}>
               <span>📌 Monthly Memo</span>
-              <span className={styles.noteHint}>persists across months</span>
+              <span className={styles.noteHint}>auto-saves as you type</span>
             </div>
             <textarea 
               className={styles.notesTextarea}
@@ -43,7 +70,7 @@ export default function NotesPanel({
             />
           </div>
           
-          {/* Range-Specific Notes Section - IMPROVED */}
+          {/* Range-Specific Notes Section - IMPROVED WITH BUTTONS */}
           <div className={styles.noteGroup}>
             <div className={styles.noteLabel}>
               <span>✍️ Range-specific Notes</span>
@@ -59,7 +86,7 @@ export default function NotesPanel({
                   <>
                     <span className={styles.rangeIcon}>📅</span>
                     <span className={styles.rangeText}>{rangeText}</span>
-                    <button className={styles.clearRangeBtn} onClick={onClearRange}>
+                    <button className={styles.clearRangeBtn} onClick={onClearRange} title="Clear selection">
                       ✕
                     </button>
                   </>
@@ -71,38 +98,88 @@ export default function NotesPanel({
               </div>
             </div>
             
-            {/* Notes textarea - enabled only when range is selected */}
+            {/* Notes textarea */}
             <textarea 
               className={`${styles.notesTextarea} ${!hasRange ? styles.disabledTextarea : ''}`}
               style={{ minHeight: '140px' }}
-              value={rangeNote}
-              onChange={(e) => onRangeNoteChange(e.target.value)}
+              value={localNote}
+              onChange={(e) => setLocalNote(e.target.value)}
               placeholder={hasRange 
-                ? "Write notes for this specific date range. They will be saved automatically and reappear when you select the same range again!" 
+                ? "Write your notes for this date range..." 
                 : "Select a start and end date on the calendar first..."
               }
               disabled={!hasRange}
             />
             
+            {/* Action Buttons - ONLY SHOW WHEN RANGE SELECTED */}
+            {hasRange && (
+              <div className={styles.noteActions}>
+                {!isEditing && !savedNotesIndicator && localNote.trim() && (
+                  <button className={styles.saveBtn} onClick={handleSave}>
+                    💾 Save Note
+                  </button>
+                )}
+                
+                {!isEditing && savedNotesIndicator && (
+                  <>
+                    <button className={styles.editBtn} onClick={() => setIsEditing(true)}>
+                      ✏️ Edit
+                    </button>
+                    <button className={styles.deleteBtn} onClick={() => setShowDeleteConfirm(true)}>
+                      🗑️ Delete
+                    </button>
+                  </>
+                )}
+                
+                {isEditing && (
+                  <>
+                    <button className={styles.saveBtn} onClick={handleSave}>
+                      💾 Save Changes
+                    </button>
+                    <button className={styles.cancelBtn} onClick={handleCancel}>
+                      ❌ Cancel
+                    </button>
+                  </>
+                )}
+                
+                {!isEditing && !savedNotesIndicator && !localNote.trim() && (
+                  <button 
+                    className={styles.saveBtn} 
+                    onClick={handleSave}
+                    disabled={!localNote.trim()}
+                  >
+                    ➕ Add Note
+                  </button>
+                )}
+              </div>
+            )}
+            
+            {/* Delete confirmation dialog */}
+            {showDeleteConfirm && (
+              <div className={styles.confirmDialog}>
+                <p>Delete this note permanently?</p>
+                <div className={styles.confirmActions}>
+                  <button className={styles.confirmYes} onClick={handleDelete}>Yes, Delete</button>
+                  <button className={styles.confirmNo} onClick={() => setShowDeleteConfirm(false)}>Cancel</button>
+                </div>
+              </div>
+            )}
+            
             {/* Helpful tip */}
             {hasRange && (
               <div className={styles.rangeTip}>
-                💡 Tip: Your notes are saved for this exact date range. 
-                If you select the same range again later, your notes will reappear!
+                💡 Tip: Notes are saved per date range. Select the same range again later and your note will reappear!
               </div>
             )}
           </div>
           
-          {/* Recent ranges quick access - NEW FEATURE */}
+          {/* Recent Ranges with Notes - NEW FEATURE */}
           <div className={styles.recentRanges}>
             <div className={styles.recentHeader}>
-              <span>🕐 Recent Ranges</span>
+              <span>🕐 Recent Ranges with Notes</span>
             </div>
-            <div className={styles.recentList}>
-              {/* This will be populated from props - shows last 3 ranges with notes */}
-              {savedNotesIndicator === 'list' && (
-                <div className={styles.recentEmpty}>Select a range to see saved notes</div>
-              )}
+            <div className={styles.recentList} id="recent-list">
+              {/* This will be populated from parent */}
             </div>
           </div>
           
