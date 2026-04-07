@@ -1,0 +1,225 @@
+.wallCalendar {
+  max-width: 1400px;
+  width: 100%;
+  background: #fef7e8;
+  background-image: radial-gradient(circle at 25% 40%, rgba(245, 225, 185, 0.2) 2%, transparent 2.5%);
+  background-size: 24px 24px;
+  border-radius: 48px 48px 36px 36px;
+  box-shadow: 0 30px 40px -20px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(255, 245, 215, 0.8), inset 0 1px 4px rgba(255, 255, 200, 0.8);
+}
+
+.calendarContainer {
+  padding: 2rem;
+}
+
+.layout {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2.2rem;
+}
+
+.mainSection {
+  flex: 2;
+  min-width: 260px;
+}
+
+.notesSection {
+  flex: 1.2;
+  min-width: 260px;
+  background: #fffaf0;
+  border-radius: 28px;
+  box-shadow: inset 0 0 0 1px #f9e5bf, 0 12px 24px -12px rgba(0, 0, 0, 0.2);
+  padding: 1.5rem;
+}
+
+.heroImage {
+  width: 100%;
+  border-radius: 32px;
+  overflow: hidden;
+  margin-bottom: 1.8rem;
+  box-shadow: 0 15px 25px -12px rgba(0, 0, 0, 0.3);
+  border: 1px solid #ead6aa;
+}
+
+.heroImage img {
+  width: 100%;
+  height: auto;
+  display: block;
+  object-fit: cover;
+  aspect-ratio: 16 / 9;
+}
+
+.monthHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+  border-bottom: 2px dashed #e7cf9e;
+  padding-bottom: 0.75rem;
+}
+
+.monthTitle {
+  font-family: 'Playfair Display', serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  color: #4c3a2b;
+}
+
+.yearBadge {
+  font-weight: 500;
+  background: #ede3cd;
+  padding: 0.3rem 1rem;
+  border-radius: 60px;
+  font-size: 0.9rem;
+  color: #5e4b36;
+  margin-left: 0.5rem;
+}
+
+.weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-weight: 600;
+  color: #8b7658;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  margin-bottom: 0.75rem;
+}
+
+.weekday {
+  padding: 0.5rem 0;
+}
+
+.calendarGrid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+}
+
+.calendarDay {
+  aspect-ratio: 1 / 1;
+  background: #ffffffdb;
+  border-radius: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 500;
+  font-size: 0.9rem;
+  color: #2e241f;
+  transition: all 0.15s ease;
+  cursor: pointer;
+  border: 1px solid #f2e2c2;
+  position: relative;
+}
+
+.empty {
+  background: #fcf5e6;
+  cursor: default;
+  opacity: 0.6;
+  border: 1px dashed #ecdbaa;
+}
+
+.inRange {
+  background: #f4e5d3;
+  border-color: #dbba87;
+}
+
+.startDate {
+  background: #b47c44;
+  color: white;
+  border-color: #9b622f;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(180, 124, 68, 0.3);
+}
+
+.endDate {
+  background: #b47c44;
+  color: white;
+  border-color: #9b622f;
+  font-weight: 700;
+  box-shadow: 0 4px 10px rgba(180, 124, 68, 0.3);
+}
+
+.calendarDay:not(.empty):hover {
+  background: #f1e2cb;
+  transform: scale(0.97);
+  border-color: #c9a668;
+}
+
+.dayNumber {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.weekend .dayNumber::after {
+  content: "⚘";
+  font-size: 0.55rem;
+  margin-left: 2px;
+  opacity: 0.7;
+  vertical-align: super;
+}
+
+.selectionInfo {
+  background: #f9efdf;
+  border-radius: 60px;
+  padding: 0.6rem 1rem;
+  font-size: 0.8rem;
+  color: #7a623f;
+  display: inline-block;
+  width: 100%;
+  text-align: center;
+  margin-top: 1rem;
+}
+
+.clearRange {
+  background: none;
+  border: none;
+  font-size: 0.7rem;
+  color: #b98f58;
+  cursor: pointer;
+  text-decoration: underline;
+  margin-left: 0.5rem;
+}
+
+.navBtn {
+  background: #e7d9c4;
+  border: none;
+  font-size: 1.3rem;
+  padding: 0.2rem 0.8rem;
+  border-radius: 40px;
+  cursor: pointer;
+  transition: all 0.1s;
+  color: #5a402a;
+  font-weight: bold;
+}
+
+.navBtn:hover {
+  background: #dac29c;
+  transform: scale(0.96);
+}
+
+.footer {
+  text-align: center;
+  margin-top: 1.5rem;
+  font-size: 0.7rem;
+  color: #bea77c;
+}
+
+@media (max-width: 760px) {
+  .calendarContainer {
+    padding: 1.2rem;
+  }
+  .monthTitle {
+    font-size: 1.5rem;
+  }
+  .calendarDay {
+    border-radius: 18px;
+  }
+  .dayNumber {
+    font-size: 1rem;
+  }
+  .weekday {
+    font-size: 0.7rem;
+  }
+}
