@@ -3,7 +3,8 @@ import { useState, useEffect, useCallback } from 'react'
 export const useCalendarRange = () => {
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
-  const [rangeNotesMap, setRangeNotesMap] = useState({}) // Store notes by range key
+  const [rangeNotesMap, setRangeNotesMap] = useState({})
+  const [currentRangeNote, setCurrentRangeNote] = useState('')
   
   // Load all saved range notes from localStorage on mount
   useEffect(() => {
@@ -11,7 +12,6 @@ export const useCalendarRange = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved)
-        // Convert date strings back to Date objects for keys? No, keys are strings
         setRangeNotesMap(parsed)
       } catch (e) {
         console.error('Failed to load range notes', e)
@@ -24,49 +24,60 @@ export const useCalendarRange = () => {
     localStorage.setItem('wallCalendar_rangeNotesMap', JSON.stringify(rangeNotesMap))
   }, [rangeNotesMap])
   
-  // Generate a unique key for a date range
+  // Update current range note when selection changes
+  useEffect(() => {
+    if (startDate && endDate) {
+      const key = getRangeKey(startDate, endDate)
+      const savedNote = rangeNotesMap[key] || ''
+      setCurrentRangeNote(savedNote)
+    } else {
+      setCurrentRangeNote('')
+    }
+  }, [startDate, endDate, rangeNotesMap])
+  
   const getRangeKey = useCallback((start, end) => {
     if (!start || !end) return null
     return `${start.getTime()}_to_${end.getTime()}`
   }, [])
   
-  // Get current range key
-  const currentRangeKey = startDate && endDate ? getRangeKey(startDate, endDate) : null
-  
-  // Get note for current range
-  const currentRangeNote = currentRangeKey ? (rangeNotesMap[currentRangeKey] || '') : ''
-  
-  // Save note for current range
-  const setCurrentRangeNote = useCallback((note) => {
-    if (currentRangeKey) {
+  const saveRangeNote = useCallback((start, end, note) => {
+    const key = getRangeKey(start, end)
+    if (key) {
       setRangeNotesMap(prev => ({
         ...prev,
-        [currentRangeKey]: note
+        [key]: note
       }))
+      setCurrentRangeNote(note)
     }
-  }, [currentRangeKey])
+  }, [getRangeKey])
+  
+  const deleteRangeNote = useCallback((start, end) => {
+    const key = getRangeKey(start, end)
+    if (key) {
+      setRangeNotesMap(prev => {
+        const newMap = { ...prev }
+        delete newMap[key]
+        return newMap
+      })
+      setCurrentRangeNote('')
+    }
+  }, [getRangeKey])
   
   const handleDateClick = useCallback((clickedDate) => {
     if (!startDate) {
-      // No start date -> set as start
       setStartDate(clickedDate)
       setEndDate(null)
     } else if (startDate && !endDate) {
-      // Start exists, no end
       if (clickedDate.getTime() === startDate.getTime()) {
-        // Same day -> deselect everything
         setStartDate(null)
         setEndDate(null)
       } else if (clickedDate > startDate) {
-        // Valid end date
         setEndDate(clickedDate)
       } else {
-        // Clicked before start -> swap: new start, clear end
         setStartDate(clickedDate)
         setEndDate(null)
       }
     } else if (startDate && endDate) {
-      // Both exist -> reset and set new start
       setStartDate(clickedDate)
       setEndDate(null)
     }
@@ -104,7 +115,6 @@ export const useCalendarRange = () => {
     return "✨ Select start & end dates"
   }, [startDate, endDate])
   
-  // Check if a specific range has notes saved
   const hasSavedNotesForRange = useCallback((start, end) => {
     const key = getRangeKey(start, end)
     return key ? !!rangeNotesMap[key] : false
@@ -122,6 +132,8 @@ export const useCalendarRange = () => {
     isEnd,
     getRangeText,
     hasSavedNotesForRange,
-    rangeNotesMap
+    rangeNotesMap,
+    saveRangeNote,
+    deleteRangeNote
   }
 }
