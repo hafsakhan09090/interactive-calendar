@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 export default function Calendar() {
   const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1))
@@ -9,11 +9,16 @@ export default function Calendar() {
   const [currentNote, setCurrentNote] = useState('')
   const [editing, setEditing] = useState(false)
   const [showQuickAccess, setShowQuickAccess] = useState(true)
+  const [monthImages, setMonthImages] = useState({})
+  const [showImageUpload, setShowImageUpload] = useState(false)
+  
+  const fileInputRef = useRef(null)
   
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
+  const monthKey = `${year}-${month}`
   
-  // Load saved notes
+  // Load all saved data
   useEffect(() => {
     const savedMonthly = localStorage.getItem('monthly_note')
     if (savedMonthly) setMonthlyNote(savedMonthly)
@@ -23,6 +28,13 @@ export default function Calendar() {
       try {
         const parsed = JSON.parse(savedRanges)
         setRangeNotes(parsed)
+      } catch(e) {}
+    }
+    
+    const savedImages = localStorage.getItem('month_images')
+    if (savedImages) {
+      try {
+        setMonthImages(JSON.parse(savedImages))
       } catch(e) {}
     }
   }, [])
@@ -37,6 +49,11 @@ export default function Calendar() {
     localStorage.setItem('range_notes', JSON.stringify(rangeNotes))
   }, [rangeNotes])
   
+  // Save month images
+  useEffect(() => {
+    localStorage.setItem('month_images', JSON.stringify(monthImages))
+  }, [monthImages])
+  
   // Update current note when range changes
   useEffect(() => {
     if (startDate && endDate) {
@@ -47,6 +64,50 @@ export default function Calendar() {
       setCurrentNote('')
     }
   }, [startDate, endDate, rangeNotes])
+  
+  // Handle image upload for current month
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0]
+    if (file && file.type.startsWith('image/')) {
+      const reader = new FileReader()
+      reader.onload = (event) => {
+        setMonthImages(prev => ({
+          ...prev,
+          [monthKey]: event.target.result
+        }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+  
+  // Remove current month's image
+  const removeImage = () => {
+    const newImages = { ...monthImages }
+    delete newImages[monthKey]
+    setMonthImages(newImages)
+  }
+  
+  // Get current month's image
+  const currentMonthImage = monthImages[monthKey]
+  
+  // Default images for months without custom image
+  const defaultImages = {
+    '0': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', // Jan - Winter
+    '1': 'https://images.unsplash.com/photo-1513151233558-860c539dcf2f?w=800', // Feb - Valentine
+    '2': 'https://images.unsplash.com/photo-1581889470536-187bd3335e5d?w=800', // Mar - Spring
+    '3': 'https://images.unsplash.com/photo-1523480717984-24cba35ae1ef?w=800', // Apr - Cherry blossom
+    '4': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800', // May - Beach
+    '5': 'https://images.unsplash.com/photo-1415025148094-ff7aaac3b16d?w=800', // Jun - Summer
+    '6': 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800', // Jul - Fireworks
+    '7': 'https://images.unsplash.com/photo-1506152983158-b4a74a01c721?w=800', // Aug - Sunflowers
+    '8': 'https://images.unsplash.com/photo-1509783236416-c9ad59bae472?w=800', // Sep - Autumn
+    '9': 'https://images.unsplash.com/photo-1542838132-92c533f91b3b?w=800', // Oct - Halloween
+    '10': 'https://images.unsplash.com/photo-1545161296-d9c2c241f2ad?w=800', // Nov - Thanksgiving
+    '11': 'https://images.unsplash.com/photo-1543589077-47d81606c1c6?w=800'  // Dec - Christmas
+  }
+  
+  const currentDefaultImage = defaultImages[month] || defaultImages['0']
+  const displayImage = currentMonthImage || currentDefaultImage
   
   // Get all saved ranges for quick access
   const getSavedRanges = () => {
@@ -62,7 +123,7 @@ export default function Calendar() {
           days: Math.round((endTime - startTime) / 86400000) + 1
         }
       })
-      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime()) // Most recent first
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime())
   }
   
   // Jump to a saved range
@@ -202,7 +263,7 @@ export default function Calendar() {
       <div style={{ padding: '24px' }}>
         
         {/* Quick Access Toggle Button */}
-        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end', gap: '12px' }}>
           <button 
             onClick={() => setShowQuickAccess(!showQuickAccess)}
             style={{
@@ -226,20 +287,146 @@ export default function Calendar() {
           
           {/* LEFT SIDE - CALENDAR */}
           <div style={{ flex: '2', minWidth: '280px' }}>
-            <div style={{
-              borderRadius: '24px',
-              overflow: 'hidden',
-              marginBottom: '24px',
-              height: '200px',
-              background: '#c2b28b'
-            }}>
-              <img 
-                src="https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&auto=format"
-                alt="Mountain lake"
-                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+            {/* Hero Image with Upload Button */}
+            <div style={{ position: 'relative', marginBottom: '24px' }}>
+              <div style={{
+                borderRadius: '24px',
+                overflow: 'hidden',
+                height: '220px',
+                background: '#c2b28b',
+                position: 'relative'
+              }}>
+                <img 
+                  src={displayImage}
+                  alt={`${monthNames[month]} ${year}`}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+                
+                {/* Image overlay with month name */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '0',
+                  left: '0',
+                  right: '0',
+                  background: 'linear-gradient(transparent, rgba(0,0,0,0.6))',
+                  padding: '20px 16px 12px',
+                  color: 'white'
+                }}>
+                  <div style={{ fontSize: '14px', opacity: 0.8 }}>Current Month</div>
+                  <div style={{ fontSize: '24px', fontWeight: 'bold', fontFamily: 'Georgia, serif' }}>
+                    {monthNames[month]} {year}
+                  </div>
+                </div>
+              </div>
+              
+              {/* Image Controls */}
+              <div style={{
+                position: 'absolute',
+                top: '12px',
+                right: '12px',
+                display: 'flex',
+                gap: '8px'
+              }}>
+                <button
+                  onClick={() => setShowImageUpload(!showImageUpload)}
+                  style={{
+                    background: 'rgba(0,0,0,0.6)',
+                    backdropFilter: 'blur(8px)',
+                    border: 'none',
+                    color: 'white',
+                    padding: '8px 12px',
+                    borderRadius: '30px',
+                    cursor: 'pointer',
+                    fontSize: '12px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
+                  }}
+                >
+                  🖼️ Change Image
+                </button>
+                
+                {currentMonthImage && (
+                  <button
+                    onClick={removeImage}
+                    style={{
+                      background: 'rgba(0,0,0,0.6)',
+                      backdropFilter: 'blur(8px)',
+                      border: 'none',
+                      color: '#ffaaaa',
+                      padding: '8px 12px',
+                      borderRadius: '30px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    ✕ Reset
+                  </button>
+                )}
+              </div>
+              
+              {/* Hidden File Input */}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                onChange={handleImageUpload}
+                style={{ display: 'none' }}
               />
+              
+              {/* Upload Panel */}
+              {showImageUpload && (
+                <div style={{
+                  position: 'absolute',
+                  top: '60px',
+                  right: '12px',
+                  background: 'white',
+                  borderRadius: '16px',
+                  padding: '16px',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+                  zIndex: 10,
+                  minWidth: '220px'
+                }}>
+                  <p style={{ fontSize: '13px', marginBottom: '12px', color: '#4a3727' }}>
+                    Upload custom image for {monthNames[month]}
+                  </p>
+                  <button
+                    onClick={() => fileInputRef.current.click()}
+                    style={{
+                      width: '100%',
+                      background: '#c68b5e',
+                      color: 'white',
+                      border: 'none',
+                      padding: '10px',
+                      borderRadius: '30px',
+                      cursor: 'pointer',
+                      marginBottom: '8px'
+                    }}
+                  >
+                    📁 Choose from PC
+                  </button>
+                  <button
+                    onClick={() => setShowImageUpload(false)}
+                    style={{
+                      width: '100%',
+                      background: '#e8dccc',
+                      border: 'none',
+                      padding: '8px',
+                      borderRadius: '30px',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    Cancel
+                  </button>
+                  <p style={{ fontSize: '10px', color: '#a0825a', marginTop: '8px', textAlign: 'center' }}>
+                    Images are saved in your browser
+                  </p>
+                </div>
+              )}
             </div>
             
+            {/* Month Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '28px', fontFamily: 'Georgia, serif', color: '#4a3727' }}>
                 {monthNames[month]} {year}
@@ -250,12 +437,14 @@ export default function Calendar() {
               </div>
             </div>
             
+            {/* Weekdays */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: '8px' }}>
               {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
                 <div key={day} style={{ padding: '8px', fontWeight: 'bold', color: '#8b7355' }}>{day}</div>
               ))}
             </div>
             
+            {/* Calendar Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map((date, idx) => {
                 if (!date) {
@@ -291,6 +480,7 @@ export default function Calendar() {
               })}
             </div>
             
+            {/* Selection Info */}
             <div style={{
               marginTop: '20px',
               padding: '12px 16px',
@@ -311,7 +501,7 @@ export default function Calendar() {
             </div>
           </div>
           
-          {/* RIGHT SIDE - NOTES */}
+          {/* RIGHT SIDE - NOTES (same as before) */}
           <div style={{
             flex: '1',
             minWidth: '300px',
@@ -501,7 +691,7 @@ export default function Calendar() {
                           {range.note.length > 80 ? range.note.substring(0, 80) + '...' : range.note}
                         </div>
                         <div style={{ fontSize: '10px', color: '#c68b5e', display: 'flex', gap: '12px' }}>
-                          <span>🔍 Click to load this range</span>
+                          <span>🔍 Click to load</span>
                           <span>💾 Saved</span>
                         </div>
                       </div>
@@ -535,7 +725,7 @@ export default function Calendar() {
             )}
             
             <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e8dccc', fontSize: '11px', color: '#a0825a', textAlign: 'center' }}>
-              💾 Notes auto-save to your browser
+              💾 Notes & Images auto-save to your browser
             </div>
           </div>
           
