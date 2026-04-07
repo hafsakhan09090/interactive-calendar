@@ -1,238 +1,161 @@
-/* Notes Panel Improvements */
-.notesHeader {
+/* Note Action Buttons */
+.noteActions {
   display: flex;
-  align-items: center;
   gap: 10px;
-  margin-bottom: 1.3rem;
-  border-left: 5px solid #c0a16b;
-  padding-left: 1rem;
-  position: relative;
+  margin-top: 12px;
+  flex-wrap: wrap;
 }
 
-.notesHeader h3 {
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
+.saveBtn, .editBtn, .deleteBtn, .cancelBtn {
+  padding: 8px 16px;
+  border-radius: 40px;
+  font-size: 0.8rem;
   font-weight: 500;
-  color: #5d432c;
-  flex: 1;
-}
-
-.expandBtn {
-  background: #ede3cd;
-  border: none;
-  width: 28px;
-  height: 28px;
-  border-radius: 50%;
-  font-size: 1.2rem;
   cursor: pointer;
-  color: #5d432c;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   transition: all 0.2s;
+  border: none;
 }
 
-.expandBtn:hover {
-  background: #dac29c;
-  transform: scale(1.05);
+.saveBtn {
+  background: #b47c44;
+  color: white;
 }
 
-.noteGroup {
-  margin-bottom: 1.8rem;
+.saveBtn:hover {
+  background: #9b622f;
+  transform: scale(0.97);
 }
 
-.noteLabel {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.5rem;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #b48a54;
-}
-
-.noteHint {
-  font-size: 0.6rem;
-  font-weight: normal;
-  color: #c9ad7a;
-  text-transform: none;
-}
-
-.savedBadge {
-  background: #c0a16b20;
-  color: #8b6b3c;
-  padding: 0.2rem 0.5rem;
-  border-radius: 20px;
-  font-size: 0.65rem;
-  font-weight: 500;
-}
-
-.notesTextarea {
-  width: 100%;
-  background: #fffef7;
-  border: 1px solid #eddbba;
-  border-radius: 24px;
-  padding: 1rem;
-  font-family: 'Inter', monospace;
-  font-size: 0.9rem;
-  line-height: 1.5;
-  color: #3c2d21;
-  resize: vertical;
-  outline: none;
-  transition: 0.1s;
-}
-
-.notesTextarea:focus {
-  border-color: #c2a15b;
-  box-shadow: 0 0 0 2px rgba(194, 161, 91, 0.3);
-}
-
-.disabledTextarea {
-  background: #f5efe3;
-  color: #a68b62;
+.saveBtn:disabled {
+  background: #d4bc97;
   cursor: not-allowed;
 }
 
-.rangeInfoCard {
-  margin-bottom: 0.8rem;
+.editBtn {
+  background: #e7d9c4;
+  color: #5d432c;
 }
 
-.rangeBadge {
-  background: #f9efdf;
-  border-radius: 60px;
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+.editBtn:hover {
+  background: #dac29c;
 }
 
-.rangeIcon {
-  font-size: 1rem;
+.deleteBtn {
+  background: #e8d0c0;
+  color: #a0522d;
 }
 
-.rangeText {
-  flex: 1;
-  font-size: 0.8rem;
-  color: #7a623f;
-  font-weight: 500;
+.deleteBtn:hover {
+  background: #d4b8a4;
 }
 
-.clearRangeBtn {
-  background: none;
-  border: none;
-  font-size: 0.8rem;
-  cursor: pointer;
-  color: #b98f58;
-  padding: 0 4px;
+.cancelBtn {
+  background: #ede3cd;
+  color: #8b7658;
+}
+
+.cancelBtn:hover {
+  background: #e0d0b5;
+}
+
+/* Confirm Dialog */
+.confirmDialog {
+  margin-top: 12px;
+  padding: 12px;
+  background: #fff5e8;
   border-radius: 20px;
+  border: 1px solid #e0c8a0;
+  text-align: center;
 }
 
-.clearRangeBtn:hover {
-  color: #8b6b3c;
-  background: #e8d9c4;
+.confirmDialog p {
+  font-size: 0.8rem;
+  color: #5d432c;
+  margin-bottom: 10px;
 }
 
-.noRangeMsg {
-  color: #b98f58;
+.confirmActions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.confirmYes {
+  background: #a0522d;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 30px;
+  cursor: pointer;
   font-size: 0.75rem;
 }
 
-.rangeTip {
-  font-size: 0.7rem;
-  color: #a08154;
-  margin-top: 0.5rem;
-  padding: 0.5rem;
-  background: #fdf8ed;
-  border-radius: 16px;
-  text-align: center;
-}
-
-.rangeStats {
-  margin-top: 0.8rem;
-  padding: 0.5rem 1rem;
-  background: #f9efdf;
-  border-radius: 60px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.statItem {
-  font-size: 0.7rem;
-  color: #7a623f;
-}
-
-.statItem strong {
+.confirmNo {
+  background: #ede3cd;
   color: #5d432c;
-  margin-left: 4px;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 30px;
+  cursor: pointer;
+  font-size: 0.75rem;
 }
 
-.savedNoteIndicator {
-  font-size: 0.65rem;
-  background: #c0a16b30;
-  padding: 0.2rem 0.6rem;
-  border-radius: 20px;
-  color: #7a5a38;
-}
-
-.notesFooter {
-  margin-top: 1rem;
-  border-top: 1px dashed #eedeba;
-  padding-top: 0.8rem;
-  font-size: 0.7rem;
-  color: #bb9f73;
-  font-style: italic;
-  text-align: center;
-}
-
+/* Recent Ranges */
 .recentRanges {
-  margin-top: 1rem;
+  margin-top: 1.5rem;
+  border-top: 1px solid #eedeba;
+  padding-top: 1rem;
 }
 
 .recentHeader {
   font-size: 0.7rem;
+  font-weight: 600;
   color: #b48a54;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.8rem;
+  text-transform: uppercase;
+}
+
+.recentList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.recentItem {
+  background: #fdf8ed;
+  border-radius: 16px;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: 1px solid #f0e2cc;
+}
+
+.recentItem:hover {
+  background: #f9efdf;
+  border-color: #dbba87;
+  transform: translateX(4px);
+}
+
+.recentItemDate {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #b47c44;
+  margin-bottom: 4px;
+}
+
+.recentItemPreview {
+  font-size: 0.7rem;
+  color: #8b7658;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .recentEmpty {
   font-size: 0.7rem;
   color: #c9ad7a;
   text-align: center;
-  padding: 0.5rem;
-}
-
-/* Selection info improvement */
-.selectionInfo {
-  background: #f9efdf;
-  border-radius: 60px;
-  padding: 0.6rem 1rem;
-  font-size: 0.8rem;
-  color: #7a623f;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  margin-top: 1rem;
-  flex-wrap: wrap;
-}
-
-.clearRange {
-  background: none;
-  border: 1px solid #dbba87;
-  padding: 0.2rem 0.8rem;
-  border-radius: 40px;
-  font-size: 0.7rem;
-  color: #b98f58;
-  cursor: pointer;
-  transition: all 0.1s;
-}
-
-.clearRange:hover {
-  background: #dbba8720;
-  border-color: #b98f58;
+  padding: 12px;
+  background: #fdf8ed;
+  border-radius: 16px;
 }
