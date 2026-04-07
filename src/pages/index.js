@@ -1,13 +1,14 @@
 import { useState, useEffect } from 'react'
 
 export default function Calendar() {
-  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1)) // April 2026
+  const [currentDate, setCurrentDate] = useState(new Date(2026, 3, 1))
   const [startDate, setStartDate] = useState(null)
   const [endDate, setEndDate] = useState(null)
   const [monthlyNote, setMonthlyNote] = useState('')
   const [rangeNotes, setRangeNotes] = useState({})
   const [currentNote, setCurrentNote] = useState('')
   const [editing, setEditing] = useState(false)
+  const [showQuickAccess, setShowQuickAccess] = useState(true)
   
   const year = currentDate.getFullYear()
   const month = currentDate.getMonth()
@@ -47,17 +48,40 @@ export default function Calendar() {
     }
   }, [startDate, endDate, rangeNotes])
   
+  // Get all saved ranges for quick access
+  const getSavedRanges = () => {
+    return Object.entries(rangeNotes)
+      .map(([key, note]) => {
+        const [startTime, endTime] = key.split('_').map(Number)
+        return {
+          key,
+          startDate: new Date(startTime),
+          endDate: new Date(endTime),
+          note: note,
+          display: `${new Date(startTime).toLocaleDateString()} – ${new Date(endTime).toLocaleDateString()}`,
+          days: Math.round((endTime - startTime) / 86400000) + 1
+        }
+      })
+      .sort((a, b) => b.startDate.getTime() - a.startDate.getTime()) // Most recent first
+  }
+  
+  // Jump to a saved range
+  const jumpToRange = (savedRange) => {
+    setStartDate(savedRange.startDate)
+    setEndDate(savedRange.endDate)
+    setCurrentDate(new Date(savedRange.startDate.getFullYear(), savedRange.startDate.getMonth(), 1))
+    setCurrentNote(savedRange.note)
+  }
+  
   // Get days in month
   const getDaysInMonth = (y, m) => {
     return new Date(y, m + 1, 0).getDate()
   }
   
-  // Get first day of month (0 = Sunday)
   const getFirstDay = (y, m) => {
     return new Date(y, m, 1).getDay()
   }
   
-  // Check if same day
   const isSameDay = (d1, d2) => {
     if (!d1 || !d2) return false
     return d1.getFullYear() === d2.getFullYear() &&
@@ -65,34 +89,26 @@ export default function Calendar() {
            d1.getDate() === d2.getDate()
   }
   
-  // Handle date click
   const handleDateClick = (clickedDate) => {
     if (!startDate) {
-      // No start date -> set as start
       setStartDate(clickedDate)
       setEndDate(null)
     } else if (startDate && !endDate) {
-      // Start exists, no end
       if (isSameDay(clickedDate, startDate)) {
-        // Same day -> clear
         setStartDate(null)
         setEndDate(null)
       } else if (clickedDate > startDate) {
-        // Valid end date
         setEndDate(clickedDate)
       } else {
-        // Clicked before start -> new start
         setStartDate(clickedDate)
         setEndDate(null)
       }
     } else {
-      // Both exist -> new selection
       setStartDate(clickedDate)
       setEndDate(null)
     }
   }
   
-  // Save range note
   const saveRangeNote = () => {
     if (startDate && endDate && currentNote.trim()) {
       const key = `${startDate.getTime()}_${endDate.getTime()}`
@@ -101,7 +117,6 @@ export default function Calendar() {
     }
   }
   
-  // Delete range note
   const deleteRangeNote = () => {
     if (startDate && endDate) {
       const key = `${startDate.getTime()}_${endDate.getTime()}`
@@ -113,32 +128,27 @@ export default function Calendar() {
     }
   }
   
-  // Clear range
   const clearRange = () => {
     setStartDate(null)
     setEndDate(null)
     setEditing(false)
   }
   
-  // Check if date is in range
   const isInRange = (date) => {
     if (!startDate || !endDate) return false
     return date.getTime() > startDate.getTime() && date.getTime() < endDate.getTime()
   }
   
-  // Check if date is start
   const isStart = (date) => {
     if (!startDate) return false
     return isSameDay(date, startDate)
   }
   
-  // Check if date is end
   const isEnd = (date) => {
     if (!endDate) return false
     return isSameDay(date, endDate)
   }
   
-  // Build calendar
   const daysInMonth = getDaysInMonth(year, month)
   const firstDay = getFirstDay(year, month)
   const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December']
@@ -151,7 +161,6 @@ export default function Calendar() {
     calendarDays.push(new Date(year, month, d))
   }
   
-  // Navigation
   const prevMonth = () => {
     setCurrentDate(new Date(year, month - 1, 1))
     setStartDate(null)
@@ -164,12 +173,11 @@ export default function Calendar() {
     setEndDate(null)
   }
   
-  // Get range text
   const getRangeText = () => {
     if (startDate && endDate) {
       const startStr = startDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
       const endStr = endDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-      const days = Math.round((endDate - startDate) / (86400000)) + 1
+      const days = Math.round((endDate - startDate) / 86400000) + 1
       return `${startStr} – ${endStr} (${days} days)`
     }
     if (startDate) {
@@ -179,10 +187,11 @@ export default function Calendar() {
   }
   
   const hasSavedNote = startDate && endDate && rangeNotes[`${startDate.getTime()}_${endDate.getTime()}`]
+  const savedRanges = getSavedRanges()
   
   return (
     <div style={{
-      maxWidth: '1200px',
+      maxWidth: '1400px',
       margin: '0 auto',
       background: '#fffaf0',
       borderRadius: '32px',
@@ -191,11 +200,32 @@ export default function Calendar() {
       fontFamily: 'system-ui, -apple-system, sans-serif'
     }}>
       <div style={{ padding: '24px' }}>
+        
+        {/* Quick Access Toggle Button */}
+        <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'flex-end' }}>
+          <button 
+            onClick={() => setShowQuickAccess(!showQuickAccess)}
+            style={{
+              background: '#c68b5e',
+              color: 'white',
+              border: 'none',
+              padding: '8px 20px',
+              borderRadius: '30px',
+              cursor: 'pointer',
+              fontSize: '14px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px'
+            }}
+          >
+            📋 {showQuickAccess ? 'Hide' : 'Show'} Saved Notes ({savedRanges.length})
+          </button>
+        </div>
+        
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '32px' }}>
           
           {/* LEFT SIDE - CALENDAR */}
           <div style={{ flex: '2', minWidth: '280px' }}>
-            {/* Hero Image */}
             <div style={{
               borderRadius: '24px',
               overflow: 'hidden',
@@ -210,7 +240,6 @@ export default function Calendar() {
               />
             </div>
             
-            {/* Month Header */}
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
               <h2 style={{ fontSize: '28px', fontFamily: 'Georgia, serif', color: '#4a3727' }}>
                 {monthNames[month]} {year}
@@ -221,14 +250,12 @@ export default function Calendar() {
               </div>
             </div>
             
-            {/* Weekdays */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', textAlign: 'center', marginBottom: '8px' }}>
               {['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'].map(day => (
                 <div key={day} style={{ padding: '8px', fontWeight: 'bold', color: '#8b7355' }}>{day}</div>
               ))}
             </div>
             
-            {/* Calendar Grid */}
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: '4px' }}>
               {calendarDays.map((date, idx) => {
                 if (!date) {
@@ -264,7 +291,6 @@ export default function Calendar() {
               })}
             </div>
             
-            {/* Selection Info */}
             <div style={{
               marginTop: '20px',
               padding: '12px 16px',
@@ -288,7 +314,7 @@ export default function Calendar() {
           {/* RIGHT SIDE - NOTES */}
           <div style={{
             flex: '1',
-            minWidth: '260px',
+            minWidth: '300px',
             background: '#fff5e8',
             borderRadius: '24px',
             padding: '20px'
@@ -320,13 +346,12 @@ export default function Calendar() {
             </div>
             
             {/* Range Note */}
-            <div>
+            <div style={{ marginBottom: '24px' }}>
               <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#a0825a', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                ✍️ Range Note
+                ✍️ Current Range Note
                 {hasSavedNote && <span style={{ marginLeft: '8px', fontSize: '10px', background: '#c68b5e20', padding: '2px 8px', borderRadius: '20px' }}>Saved</span>}
               </label>
               
-              {/* Range Display */}
               <div style={{
                 background: '#f0e8d8',
                 padding: '10px 12px',
@@ -360,7 +385,6 @@ export default function Calendar() {
                 }}
               />
               
-              {/* Action Buttons */}
               {startDate && endDate && (
                 <div style={{ display: 'flex', gap: '10px', marginTop: '12px' }}>
                   {!hasSavedNote && currentNote.trim() && (
@@ -392,8 +416,126 @@ export default function Calendar() {
               )}
             </div>
             
-            <div style={{ marginTop: '24px', paddingTop: '16px', borderTop: '1px solid #e8dccc', fontSize: '11px', color: '#a0825a', textAlign: 'center' }}>
-              Notes auto-save to your browser
+            {/* QUICK ACCESS - SAVED NOTES SECTION */}
+            {showQuickAccess && (
+              <div style={{
+                borderTop: '2px solid #e8dccc',
+                paddingTop: '20px',
+                marginTop: '8px'
+              }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
+                  <span style={{ fontSize: '18px' }}>📋</span>
+                  <h4 style={{ fontSize: '16px', fontFamily: 'Georgia, serif', color: '#4a3727', margin: 0 }}>
+                    Saved Range Notes
+                  </h4>
+                  <span style={{
+                    background: '#c68b5e',
+                    color: 'white',
+                    fontSize: '11px',
+                    padding: '2px 8px',
+                    borderRadius: '20px'
+                  }}>
+                    {savedRanges.length}
+                  </span>
+                </div>
+                
+                {savedRanges.length === 0 ? (
+                  <div style={{
+                    textAlign: 'center',
+                    padding: '30px 20px',
+                    background: '#f0e8d8',
+                    borderRadius: '20px',
+                    color: '#a0825a',
+                    fontSize: '13px'
+                  }}>
+                    📭 No saved notes yet<br/>
+                    Select a date range and save a note!
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', maxHeight: '400px', overflowY: 'auto' }}>
+                    {savedRanges.map((range, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => jumpToRange(range)}
+                        style={{
+                          background: 'white',
+                          borderRadius: '16px',
+                          padding: '12px',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          border: startDate && endDate && 
+                                  startDate.getTime() === range.startDate.getTime() && 
+                                  endDate.getTime() === range.endDate.getTime()
+                                  ? '2px solid #c68b5e'
+                                  : '1px solid #e8dccc',
+                          boxShadow: '0 1px 3px rgba(0,0,0,0.05)'
+                        }}
+                        onMouseEnter={(e) => e.currentTarget.style.transform = 'translateX(4px)'}
+                        onMouseLeave={(e) => e.currentTarget.style.transform = 'translateX(0)'}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                            <span>📅</span>
+                            <span style={{ fontWeight: 'bold', fontSize: '13px', color: '#4a3727' }}>
+                              {range.display}
+                            </span>
+                          </div>
+                          <span style={{
+                            fontSize: '10px',
+                            background: '#f0e8d8',
+                            padding: '2px 6px',
+                            borderRadius: '20px',
+                            color: '#8b7355'
+                          }}>
+                            {range.days} days
+                          </span>
+                        </div>
+                        <div style={{
+                          fontSize: '12px',
+                          color: '#a0825a',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          marginBottom: '8px'
+                        }}>
+                          {range.note.length > 80 ? range.note.substring(0, 80) + '...' : range.note}
+                        </div>
+                        <div style={{ fontSize: '10px', color: '#c68b5e', display: 'flex', gap: '12px' }}>
+                          <span>🔍 Click to load this range</span>
+                          <span>💾 Saved</span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                
+                {savedRanges.length > 0 && (
+                  <button
+                    onClick={() => {
+                      if (confirm('Delete ALL saved range notes?')) {
+                        setRangeNotes({})
+                      }
+                    }}
+                    style={{
+                      width: '100%',
+                      marginTop: '12px',
+                      padding: '8px',
+                      background: 'none',
+                      border: '1px solid #e8dccc',
+                      borderRadius: '30px',
+                      color: '#c68b5e',
+                      cursor: 'pointer',
+                      fontSize: '12px'
+                    }}
+                  >
+                    🗑️ Clear All Saved Notes
+                  </button>
+                )}
+              </div>
+            )}
+            
+            <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e8dccc', fontSize: '11px', color: '#a0825a', textAlign: 'center' }}>
+              💾 Notes auto-save to your browser
             </div>
           </div>
           
