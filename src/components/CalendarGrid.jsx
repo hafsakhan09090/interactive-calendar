@@ -1,34 +1,53 @@
 import styles from '@/styles/Calendar.module.css'
-import { getDaysInMonth, getFirstDayOfMonth, isWeekend } from '@/utils/dateHelpers'
+import { getDaysInMonth, getFirstDayOfMonth, isWeekend, isSameDay, isDateInRange } from '@/utils/dateHelpers'
 
-export default function CalendarGrid({ year, month, startDate, endDate, isInRange, isStart, isEnd, onDateClick }) {
+export default function CalendarGrid({ year, month, startDate, endDate, onDateClick }) {
+  // Get calendar data
   const daysInMonth = getDaysInMonth(year, month)
   const firstDay = getFirstDayOfMonth(year, month)
   
+  // Build calendar days array
   const calendarDays = []
   
-  // Empty cells before month start
+  // Add empty cells for days before month starts
   for (let i = 0; i < firstDay; i++) {
-    calendarDays.push({ date: null, isEmpty: true, dayNum: null })
+    calendarDays.push({ 
+      date: null, 
+      isEmpty: true, 
+      dayNum: null,
+      isStart: false,
+      isEnd: false,
+      isInRange: false
+    })
   }
   
-  // Actual days
+  // Add actual days of the month
   for (let d = 1; d <= daysInMonth; d++) {
     const fullDate = new Date(year, month, d)
+    
+    // Check selection status
+    const isStartDate = startDate ? isSameDay(fullDate, startDate) : false
+    const isEndDate = endDate ? isSameDay(fullDate, endDate) : false
+    const isInRangeSelected = startDate && endDate ? isDateInRange(fullDate, startDate, endDate) : false
+    
     calendarDays.push({
       date: fullDate,
       isEmpty: false,
       dayNum: d,
-      fullDate,
-      weekend: isWeekend(year, month, d)
+      fullDate: fullDate,
+      weekend: isWeekend(year, month, d),
+      isStart: isStartDate,
+      isEnd: isEndDate,
+      isInRange: isInRangeSelected
     })
   }
-
+  
+  // Get CSS class for a day
   const getDayClass = (day) => {
     if (day.isEmpty) return styles.empty
-    if (isStart(day.fullDate)) return styles.startDate
-    if (isEnd(day.fullDate)) return styles.endDate
-    if (isInRange(day.fullDate)) return styles.inRange
+    if (day.isStart) return styles.startDate
+    if (day.isEnd) return styles.endDate
+    if (day.isInRange) return styles.inRange
     return ''
   }
 
