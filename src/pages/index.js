@@ -93,7 +93,7 @@ export default function Calendar() {
   // Default images for months without custom image
   const defaultImages = {
     '0': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', // Jan - Winter
-    '1': 'https://images.unsplash.com/photo-1513151233558-860c539dcf2f?w=800', // Feb - Valentine
+    '1': 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Feb 
     '2': 'https://images.unsplash.com/photo-1581889470536-187bd3335e5d?w=800', // Mar - Spring
     '3': 'https://images.unsplash.com/photo-1523480717984-24cba35ae1ef?w=800', // Apr - Cherry blossom
     '4': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800', // May - Beach
