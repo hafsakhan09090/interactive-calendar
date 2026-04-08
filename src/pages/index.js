@@ -94,16 +94,16 @@ export default function Calendar() {
   const defaultImages = {
     '0': 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800', // Jan - Winter
     '1': 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?q=80&w=870&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Feb 
-    '2': 'https://images.unsplash.com/photo-1581889470536-187bd3335e5d?w=800', // Mar - Spring
-    '3': 'https://images.unsplash.com/photo-1523480717984-24cba35ae1ef?w=800', // Apr - Cherry blossom
-    '4': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800', // May - Beach
-    '5': 'https://images.unsplash.com/photo-1415025148094-ff7aaac3b16d?w=800', // Jun - Summer
-    '6': 'https://images.unsplash.com/photo-1533105079780-92b9be482077?w=800', // Jul - Fireworks
-    '7': 'https://images.unsplash.com/photo-1506152983158-b4a74a01c721?w=800', // Aug - Sunflowers
-    '8': 'https://images.unsplash.com/photo-1509783236416-c9ad59bae472?w=800', // Sep - Autumn
-    '9': 'https://images.unsplash.com/photo-1542838132-92c533f91b3b?w=800', // Oct - Halloween
-    '10': 'https://images.unsplash.com/photo-1545161296-d9c2c241f2ad?w=800', // Nov - Thanksgiving
-    '11': 'https://images.unsplash.com/photo-1543589077-47d81606c1c6?w=800'  // Dec - Christmas
+    '2': 'https://plus.unsplash.com/premium_photo-1663090593977-9923cc536f3b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Mar - Spring
+    '3': 'https://images.unsplash.com/photo-1513608827986-eb374a75fa5e?q=80&w=1374&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Apr - Cherry blossom
+    '4': 'https://images.unsplash.com/photo-1560717789-0ac7c58ac90a?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // May - Beach
+    '5': 'https://images.unsplash.com/photo-1509803874385-db7c23652552?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Jun - Summer
+    '6': 'https://plus.unsplash.com/premium_photo-1670596563059-26e43dbae29f?q=80&w=1563&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Jul - Fireworks
+    '7': 'https://images.unsplash.com/photo-1584831748175-357027100c43?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Aug - Sunflowers
+    '8': 'https://images.unsplash.com/photo-1615028427098-f2185474eeb3?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Sep - Autumn
+    '9': 'https://images.unsplash.com/photo-1500964757637-c85e8a162699?q=80&w=1503&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Oct - Halloween
+    '10': 'https://plus.unsplash.com/premium_photo-1674487959493-8894cc9473ea?q=80&w=1536&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D', // Nov - Thanksgiving
+    '11': 'https://images.unsplash.com/photo-1531959870249-9f9b729efcf4?q=80&w=842&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D'  // Dec - Christmas
   }
   
   const currentDefaultImage = defaultImages[month] || defaultImages['0']
