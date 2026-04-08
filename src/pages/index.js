@@ -279,7 +279,7 @@ export default function Calendar() {
               gap: '8px'
             }}
           >
-            📋 {showQuickAccess ? 'Hide' : 'Show'} Saved Notes ({savedRanges.length})
+            {showQuickAccess ? 'Hide' : 'Show'} Saved Notes ({savedRanges.length})
           </button>
         </div>
         
@@ -492,7 +492,7 @@ export default function Calendar() {
               flexWrap: 'wrap',
               gap: '8px'
             }}>
-              <span>📅 {getRangeText()}</span>
+              <span>{getRangeText()}</span>
               {(startDate || endDate) && (
                 <button onClick={clearRange} style={{ background: 'none', border: 'none', color: '#c68b5e', cursor: 'pointer', textDecoration: 'underline' }}>
                   Clear
@@ -510,13 +510,12 @@ export default function Calendar() {
             padding: '20px'
           }}>
             <h3 style={{ fontSize: '22px', fontFamily: 'Georgia, serif', marginBottom: '20px', color: '#4a3727' }}>
-              📔 Notes
+              Notes
             </h3>
             
             {/* Monthly Note */}
             <div style={{ marginBottom: '24px' }}>
               <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#a0825a', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                📌 Monthly Memo
               </label>
               <textarea
                 value={monthlyNote}
@@ -538,7 +537,7 @@ export default function Calendar() {
             {/* Range Note */}
             <div style={{ marginBottom: '24px' }}>
               <label style={{ fontSize: '12px', fontWeight: 'bold', color: '#a0825a', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-                ✍️ Current Range Note
+                Current Range Note
                 {hasSavedNote && <span style={{ marginLeft: '8px', fontSize: '10px', background: '#c68b5e20', padding: '2px 8px', borderRadius: '20px' }}>Saved</span>}
               </label>
               
@@ -595,7 +594,7 @@ export default function Calendar() {
                   {editing && (
                     <>
                       <button onClick={saveRangeNote} style={{ background: '#c68b5e', color: 'white', border: 'none', padding: '8px 16px', borderRadius: '30px', cursor: 'pointer' }}>
-                        💾 Save
+                        Save
                       </button>
                       <button onClick={() => setEditing(false)} style={{ background: '#e8dccc', border: 'none', padding: '8px 16px', borderRadius: '30px', cursor: 'pointer' }}>
                         Cancel
@@ -614,7 +613,7 @@ export default function Calendar() {
                 marginTop: '8px'
               }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '16px' }}>
-                  <span style={{ fontSize: '18px' }}>📋</span>
+                  <span style={{ fontSize: '18px' }}></span>
                   <h4 style={{ fontSize: '16px', fontFamily: 'Georgia, serif', color: '#4a3727', margin: 0 }}>
                     Saved Range Notes
                   </h4>
@@ -638,7 +637,7 @@ export default function Calendar() {
                     color: '#a0825a',
                     fontSize: '13px'
                   }}>
-                    📭 No saved notes yet<br/>
+                     No saved notes yet<br/>
                     Select a date range and save a note!
                   </div>
                 ) : (
@@ -725,7 +724,7 @@ export default function Calendar() {
             )}
             
             <div style={{ marginTop: '16px', paddingTop: '16px', borderTop: '1px solid #e8dccc', fontSize: '11px', color: '#a0825a', textAlign: 'center' }}>
-              💾 Notes & Images auto-save to your browser
+               Notes & Images auto-save to your browser
             </div>
           </div>
           
