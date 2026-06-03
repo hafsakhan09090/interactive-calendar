@@ -12,9 +12,6 @@ Combines a realistic paper calendar aesthetic with modern web features and smoot
 | 🔗 Resource | URL |
 |------------|-----|
 | Live Demo | https://interactive-calendar-omega.vercel.app |
-| GitHub | https://github.com/hafsakhan09090/interactive-calendar |
-| Video Demo | https://www.youtube.com/watch?v=eLt-EPLfiSc |
-
 ---
 
 ## ✨ Features
